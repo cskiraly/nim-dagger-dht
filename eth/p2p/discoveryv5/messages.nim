@@ -15,7 +15,7 @@
 import
   std/[hashes, net],
   stew/arrayops,
-  ../../rlp, ./enr
+  eth/rlp, ./enr
 
 type
   MessageKind* = enum
