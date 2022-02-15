@@ -1,8 +1,6 @@
 import
-  std/[net],
-  stint, bearssl, metrics,
-  eth/[rlp, keys],
-  "."/[messages, node, enr]
+  eth/[rlp],
+  "."/[messages, enr]
 
 from stew/objects import checkedEnumAssign
 
