@@ -282,18 +282,20 @@ proc handleFindNode(d: Protocol, fromId: NodeId, fromAddr: Address,
 proc handleTalkReq(d: Protocol, fromId: NodeId, fromAddr: Address,
     talkreq: TalkReqMessage, reqId: RequestId) =
   let talkProtocol = d.talkProtocols.getOrDefault(talkreq.protocol)
+  trace "talk", talkProtocol = talkreq.protocol
 
   let talkresp =
     if talkProtocol.isNil() or talkProtocol.protocolHandler.isNil():
       # Protocol identifier that is not registered and thus not supported. An
       # empty response is send as per specification.
+      trace "kaboom"
       TalkRespMessage(response: @[])
     else:
       TalkRespMessage(response: talkProtocol.protocolHandler(talkProtocol,
         talkreq.request, fromId, fromAddr))
 
   trace "Respond message packet", dstId = fromId, address = fromAddr,
-    kind = MessageKind.talkresp
+    kind = MessageKind.talkresp, talkresp
   d.transport.send(fromId, fromAddr, encodeMessage(talkresp, reqId))
 
 proc handleMessage(d: Protocol, srcId: NodeId, fromAddr: Address,
@@ -487,6 +489,8 @@ proc lookup*(d: Protocol, target: NodeId): Future[seq[Node]] {.async.} =
   # Unvalidated nodes are used for requests as a form of validation.
   var closestNodes = d.routingTable.neighbours(target, BUCKET_SIZE,
     seenOnly = false)
+
+  trace "starting lookup", n=d.localNode, target, closestNodes
 
   var asked, seen = initHashSet[NodeId]()
   asked.incl(d.localNode.id) # No need to ask our own node
